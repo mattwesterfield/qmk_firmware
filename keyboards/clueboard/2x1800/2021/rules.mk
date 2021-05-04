@@ -1,1 +1,1 @@
-QUANTUM_LIB_SRC += spi_master.c
+QUANTUM_LIB_SRC += max7219.c

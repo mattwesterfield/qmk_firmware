@@ -36,3 +36,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Locking resynchronize hack */
 #define LOCKING_RESYNC_ENABLE
+
+// Configure our MAX7219's
+#define MAX7219_DATA B2
+#define MAX7219_CLK B1
+#define MAX7219_LOAD B0
+#define MAX7219_CONTROLLERS 2
