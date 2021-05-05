@@ -55,21 +55,37 @@ bool encoder_update_keymap(int8_t index, bool clockwise) {
     return false;
 }
 
+#define NUM_COLUMNS 8*MAX7219_CONTROLLERS
+uint8_t led_position[2] = {0,0};  // The location of the cursor in the matrix
+
 void encoder_update_kb(int8_t index, bool clockwise) {
     xprintf("Encoder spin\n");
     if (!encoder_update_keymap(index, clockwise)) {
         // Encoder 1, left
         if (index == 0 && clockwise) {
-            tap_code(KC_MS_U);  // turned right
+            if (led_position[0] < NUM_COLUMNS) {  // turned right
+                led_position[0]++;
+            }
         } else if (index == 0) {
-            tap_code(KC_MS_D);  // turned left
+            if (led_position[0] > 0) {  // turned left
+                led_position[0]--;
+            }
         }
 
         // Encoder 2, right
         else if (index == 1 && clockwise) {
-            tap_code(KC_MS_R);  // turned right
+            if (led_position[1] < NUM_COLUMNS) {  // turned right
+                led_position[1]++;
+            }
         } else if (index == 1) {
-            tap_code(KC_MS_L);  // turned left
+            if (led_position[1] > 0) {  // turned left
+                led_position[1]--;
+            }
         }
+
+        uint8_t device_num = led_position[0] / 8;
+        uint8_t col = led_position[0] % 8;
+        uint8_t row = led_position[1];
+        max7219_set_led(device_num, row, col, true);
     }
 }

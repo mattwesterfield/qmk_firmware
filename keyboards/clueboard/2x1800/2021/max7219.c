@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2021 Zach White <skullydazed@gmail.com>
  * Copyright (c) 2007 Eberhard Fahle
  *
@@ -71,6 +71,8 @@ void max7219_write(int device_num, volatile uint8_t opcode, volatile uint8_t dat
 /* Turn off all the LEDs
  */
 void max7219_clear_display(int device_num) {
+    xprintf("max7219_clear_display(%d);\n", device_num);
+
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
     }
@@ -86,6 +88,8 @@ void max7219_clear_display(int device_num) {
 /* Enable the display test (IE turn on all 64 LEDs)
  */
 void max7219_display_test(int device_num, bool enabled) {
+    xprintf("max7219_display_test(%d,  %d);\n", device_num, enabled);
+
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
     }
@@ -96,6 +100,7 @@ void max7219_display_test(int device_num, bool enabled) {
 /* Initialize the max7219 system and set the controller(s) to a default state.
  */
 void max7219_init(void) {
+    wait_ms(1500);
     xprintf("max7219_init()\n");
 
     setPinOutput(MAX7219_DATA);
@@ -108,26 +113,37 @@ void max7219_init(void) {
     }
 
     for (int i=0; i<MAX7219_CONTROLLERS; i++) {
-        // Disable the display, reset everything to defaults, and reenable the display
-        max7219_shutdown(i, true);
+        // Reset everything to defaults and enable the display
+        xprintf("\n");
         max7219_display_test(i, false);
         max7219_set_scan_limit(i, 7);
         max7219_set_decode_mode(i, 0);
         max7219_clear_display(i);
         max7219_set_intensity(i, 8);
         max7219_shutdown(i, false);
+        xprintf("\n");
     }
 
     for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+        xprintf("\n");
+        max7219_set_led(i, 0, 0, true);
+    /*
+        wait_ms(500);
+        max7219_set_led(i, 0, 0, false);
+        xprintf("\n");
         max7219_display_test(i, true);
         wait_ms(500);
         max7219_display_test(i, false);
+    */
     }
+    //max7219_set_led(1, 0, 0, true);
 }
 
 /* Set the decode mode of the controller. You probably don't want to change this.
  */
 void max7219_set_decode_mode(int device_num, int mode) {
+    xprintf("max7219_set_decode_mode(%d,  %d);\n", device_num, mode);
+
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
     }
@@ -138,6 +154,8 @@ void max7219_set_decode_mode(int device_num, int mode) {
 /* Set the intensive (brightness) for the LEDs.
  */
 void max7219_set_intensity(int device_num, int intensity) {
+    xprintf("max7219_set_intensity(%d,  %d);\n", device_num, intensity);
+
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
     }
@@ -150,6 +168,8 @@ void max7219_set_intensity(int device_num, int intensity) {
 /* Control a single LED.
  */
 void max7219_set_led(int device_num, int row, int column, bool state) {
+    xprintf("max7219_set_led(%d,  %d, %d, %d);\n", device_num, row, column, state);
+
     int offset;
     uint8_t val = 0x00;
 
@@ -178,16 +198,20 @@ void max7219_set_led(int device_num, int row, int column, bool state) {
 /* Set a whole row of LEDs.
  */
 void max7219_set_row(int device_num, int row, unsigned char value) {
+    xprintf("max7219_set_row(%d, %d, %x);\n", device_num, row, value);
 }
 
 /* Set a whole column of LEDs.
  */
 void max7219_set_col(int device_num, int col, unsigned char value) {
+    xprintf("max7219_set_col(%d, %d, %x);\n", device_num, col, value);
 }
 
 /* Set the number of digits (rows) to be scanned.
  */
 void max7219_set_scan_limit(int device_num, int limit) {
+    xprintf("max7219_set_scan_limit(%d, %d);\n", device_num, limit);
+
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
     }
@@ -200,6 +224,8 @@ void max7219_set_scan_limit(int device_num, int limit) {
 /* Enable or disable the controller.
  */
 void max7219_shutdown(int device_num, bool is_in_shutdown) {
+    xprintf("max7219_shutdown(%d, %d);\n", device_num, is_in_shutdown);
+
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
     }
