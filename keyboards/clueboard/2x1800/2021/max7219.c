@@ -114,29 +114,21 @@ void max7219_init(void) {
 
     for (int i=0; i<MAX7219_CONTROLLERS; i++) {
         // Reset everything to defaults and enable the display
-        xprintf("\n");
         max7219_display_test(i, false);
         max7219_set_scan_limit(i, 7);
         max7219_set_decode_mode(i, 0);
         max7219_clear_display(i);
         max7219_set_intensity(i, 8);
         max7219_shutdown(i, false);
-        xprintf("\n");
     }
 
+#ifdef MAX7219_LED_TEST
     for (int i=0; i<MAX7219_CONTROLLERS; i++) {
-        xprintf("\n");
-        max7219_set_led(i, 0, 0, true);
-    /*
-        wait_ms(500);
-        max7219_set_led(i, 0, 0, false);
-        xprintf("\n");
         max7219_display_test(i, true);
         wait_ms(500);
         max7219_display_test(i, false);
-    */
     }
-    //max7219_set_led(1, 0, 0, true);
+#endif
 }
 
 /* Set the decode mode of the controller. You probably don't want to change this.

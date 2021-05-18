@@ -41,4 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX7219_DATA B2
 #define MAX7219_CLK B1
 #define MAX7219_LOAD B0
-#define MAX7219_CONTROLLERS 2
+#define MAX7219_CONTROLLERS 4
+
+// Remove this after you've built your board
+#define MAX7219_LED_TEST
