@@ -123,10 +123,12 @@ void max7219_init(void) {
     }
 
 #ifdef MAX7219_LED_TEST
-    for (int i=0; i<MAX7219_CONTROLLERS; i++) {
-        max7219_display_test(i, true);
-        wait_ms(500);
-        max7219_display_test(i, false);
+    while (true) {
+        for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+            max7219_display_test(i, true);
+            wait_ms(500);
+            max7219_display_test(i, false);
+        }
     }
 #endif
 }
