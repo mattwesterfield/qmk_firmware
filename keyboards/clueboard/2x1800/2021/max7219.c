@@ -88,7 +88,7 @@ void max7219_clear_display(int device_num) {
 /* Enable the display test (IE turn on all 64 LEDs)
  */
 void max7219_display_test(int device_num, bool enabled) {
-    xprintf("max7219_display_test(%d,  %d);\n", device_num, enabled);
+    xprintf("max7219_display_test(%d, %d);\n", device_num, enabled);
 
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
@@ -123,20 +123,29 @@ void max7219_init(void) {
     }
 
 #ifdef MAX7219_LED_TEST
-    while (true) {
-        for (int i=0; i<MAX7219_CONTROLLERS; i++) {
-            max7219_display_test(i, true);
-            wait_ms(500);
-            max7219_display_test(i, false);
-        }
+    for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+        max7219_display_test(i, true);
+        wait_ms(500);
+        max7219_display_test(i, false);
     }
 #endif
+    while (1) {
+        for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+            for (int row=0; row<8; row++) {
+                for (int col=0; col<8; col++) {
+                    max7219_set_led(i, row, col, true);
+                    wait_ms(500);
+                    max7219_set_led(i, row, col, false);
+                }
+            }
+        }
+    }
 }
 
 /* Set the decode mode of the controller. You probably don't want to change this.
  */
 void max7219_set_decode_mode(int device_num, int mode) {
-    xprintf("max7219_set_decode_mode(%d,  %d);\n", device_num, mode);
+    xprintf("max7219_set_decode_mode(%d, %d);\n", device_num, mode);
 
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
@@ -148,7 +157,7 @@ void max7219_set_decode_mode(int device_num, int mode) {
 /* Set the intensive (brightness) for the LEDs.
  */
 void max7219_set_intensity(int device_num, int intensity) {
-    xprintf("max7219_set_intensity(%d,  %d);\n", device_num, intensity);
+    xprintf("max7219_set_intensity(%d, %d);\n", device_num, intensity);
 
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
         return;
@@ -162,16 +171,18 @@ void max7219_set_intensity(int device_num, int intensity) {
 /* Control a single LED.
  */
 void max7219_set_led(int device_num, int row, int column, bool state) {
-    xprintf("max7219_set_led(%d,  %d, %d, %d);\n", device_num, row, column, state);
+    xprintf("max7219_set_led(%d, %d, %d, %d);\n", device_num, row, column, state);
 
     int offset;
     uint8_t val = 0x00;
 
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
+        xprintf("max7219_set_led: device_num out of bounds: %d", device_num);
         return;
     }
 
     if (row<0 || row>7 || column<0 || column>7) {
+        xprintf("max7219_set_led: row (%d) or col (%d) out of bounds", row, column);
         return;
     }
 
