@@ -58,7 +58,7 @@ bool encoder_update_keymap(int8_t index, bool clockwise) {
 #define NUM_COLUMNS 8*MAX7219_CONTROLLERS
 uint8_t led_position[2] = {0,0};  // The location of the cursor in the matrix
 
-void encoder_update_kb(int8_t index, bool clockwise) {
+bool encoder_update_kb(uint8_t index, bool clockwise) {
     xprintf("Encoder spin\n");
     if (!encoder_update_keymap(index, clockwise)) {
         // Encoder 1, left
@@ -88,4 +88,5 @@ void encoder_update_kb(int8_t index, bool clockwise) {
         uint8_t row = led_position[1];
         max7219_set_led(device_num, row, col, true);
     }
+    return true;  // FIXME: check which I should return
 }

@@ -123,12 +123,15 @@ void max7219_init(void) {
     }
 
 #ifdef MAX7219_LED_TEST
-    for (int i=0; i<MAX7219_CONTROLLERS; i++) {
-        max7219_display_test(i, true);
-        wait_ms(500);
-        max7219_display_test(i, false);
+    while(1) {
+        for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+            max7219_display_test(i, true);
+            wait_ms(500);
+            max7219_display_test(i, false);
+        }
     }
 #endif
+#if 0
     while (1) {
         for (int i=0; i<MAX7219_CONTROLLERS; i++) {
             for (int row=0; row<8; row++) {
@@ -140,6 +143,7 @@ void max7219_init(void) {
             }
         }
     }
+#endif
 }
 
 /* Set the decode mode of the controller. You probably don't want to change this.
