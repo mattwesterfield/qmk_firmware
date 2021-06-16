@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2021 Zach White <skullydazed@gmail.com>
  * Copyright (c) 2007 Eberhard Fahle
  *
@@ -51,6 +51,7 @@
 // Datastructures
 uint8_t buffer[2];
 uint8_t status[LED_COUNT];
+uint8_t max7219_spidata[MAX_BYTES];
 
 // Functions
 void shift_out(uint8_t val);

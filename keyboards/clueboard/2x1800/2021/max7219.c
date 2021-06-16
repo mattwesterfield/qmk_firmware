@@ -41,31 +41,44 @@
 /* Bitbang data by pulling the MAX7219_DATA pin high/low and pulsing the MAX7219_CLK pin between bits.
  */
 void shift_out(uint8_t val) {
-    uint8_t i;
-
-    for (i=0; i < 8; i++)  {
+    for (uint8_t i=0; i < 8; i++)  {
         writePin(MAX7219_DATA, !!(val & (1 << (7 - i))));
         writePinHigh(MAX7219_CLK);
         writePinLow(MAX7219_CLK);
     }
 }
 
-/* Write data to a single max7219
+/* Write max7219_spidata to all the max7219's
  */
-void max7219_write(int device_num, volatile uint8_t opcode, volatile uint8_t data) {
-    // Create an array with the data to shift out
-    uint8_t offset = device_num*2;
-    uint8_t spidata[MAX_BYTES];
-
-    spidata[offset+1] = opcode;
-    spidata[offset] = data;
+void max7219_write_all(void) {
+    xprintf("max7219_write_all()\n");
 
     // Bitbang the data
     writePinLow(MAX7219_LOAD);
     for(int i = MAX_BYTES; i>0; i--) {
-        shift_out(spidata[i-1]);
+        xprintf("shift_out: %d: %d\n", i-1, max7219_spidata[i-1]);
+        shift_out(max7219_spidata[i-1]);
     }
     writePinHigh(MAX7219_LOAD);
+}
+
+/* Write data to a single max7219
+ */
+void max7219_write(int device_num, volatile uint8_t opcode, volatile uint8_t data) {
+    xprintf("max7219_write(%d, %d, %d)\n", device_num, opcode, data);
+
+    // Clear the data array
+    for(int i = MAX_BYTES; i>0; i--) {
+        max7219_spidata[i-1]=0;
+    }
+
+    // Set our opcode and data
+    uint8_t offset = device_num*2;
+    max7219_spidata[offset] = data;
+    max7219_spidata[offset+1] = opcode;
+
+    // Write the data
+    max7219_write_all();
 }
 
 /* Turn off all the LEDs
@@ -122,6 +135,13 @@ void max7219_init(void) {
         max7219_shutdown(i, false);
     }
 
+    for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+        // Test this display
+        max7219_display_test(i, true);
+        wait_ms(100);
+        max7219_display_test(i, false);
+    }
+
 #ifdef MAX7219_LED_TEST
     while(1) {
         for (int i=0; i<MAX7219_CONTROLLERS; i++) {
@@ -131,11 +151,10 @@ void max7219_init(void) {
         }
     }
 #endif
-#if 0
     while (1) {
-        for (int i=0; i<MAX7219_CONTROLLERS; i++) {
-            for (int row=0; row<8; row++) {
-                for (int col=0; col<8; col++) {
+        for(int col=0;col<8;col++) {
+            for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+                for (int row=0; row<8; row++) {
                     max7219_set_led(i, row, col, true);
                     wait_ms(500);
                     max7219_set_led(i, row, col, false);
@@ -143,7 +162,6 @@ void max7219_init(void) {
             }
         }
     }
-#endif
 }
 
 /* Set the decode mode of the controller. You probably don't want to change this.
@@ -158,7 +176,7 @@ void max7219_set_decode_mode(int device_num, int mode) {
     max7219_write(device_num, OP_DECODEMODE, mode);
 }
 
-/* Set the intensive (brightness) for the LEDs.
+/* Set the intensity (brightness) for the LEDs.
  */
 void max7219_set_intensity(int device_num, int intensity) {
     xprintf("max7219_set_intensity(%d, %d);\n", device_num, intensity);
@@ -181,27 +199,32 @@ void max7219_set_led(int device_num, int row, int column, bool state) {
     uint8_t val = 0x00;
 
     if (device_num<0 || device_num >= MAX7219_CONTROLLERS) {
-        xprintf("max7219_set_led: device_num out of bounds: %d", device_num);
+        xprintf("max7219_set_led: device_num out of bounds: %d\n", device_num);
         return;
     }
 
-    if (row<0 || row>7 || column<0 || column>7) {
-        xprintf("max7219_set_led: row (%d) or col (%d) out of bounds", row, column);
+    if (column<0 || column>7) {
+        xprintf("max7219_set_led: column (%d) out of bounds\n", column);
+        return;
+    }
+
+    if (row<0 || row>7) {
+        xprintf("max7219_set_led: row (%d) out of bounds\n", row);
         return;
     }
 
     offset = device_num*8;
     val = 0b10000000 >> column;
 
+    xprintf("set_led: state before: %d\n", status[offset+row]);
     if (state) {
         status[offset+row] = status[offset+row]|val;
     } else {
         val = ~val;
         status[offset+row] = status[offset+row]&val;
     }
+    xprintf("set_led: state after: %d\n", status[offset+row]);
     max7219_write(device_num, row+1, status[offset+row]);
-    /* You are looking at status, and how it seems to only be used for temporary LED state. You're wondering if you can use it for all LED state, or if you should just write your own based around a 2d array.
-     */
 }
 
 /* Set a whole row of LEDs.

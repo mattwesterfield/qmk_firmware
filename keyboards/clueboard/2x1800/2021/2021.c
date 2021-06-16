@@ -59,34 +59,40 @@ bool encoder_update_keymap(int8_t index, bool clockwise) {
 uint8_t led_position[2] = {0,0};  // The location of the cursor in the matrix
 
 bool encoder_update_kb(uint8_t index, bool clockwise) {
-    xprintf("Encoder spin\n");
+    //xprintf("Encoder spin\n");
     if (!encoder_update_keymap(index, clockwise)) {
         // Encoder 1, left
         if (index == 0 && clockwise) {
-            if (led_position[0] < NUM_COLUMNS) {  // turned right
+            if (led_position[0] < NUM_COLUMNS-1) {  // turned right
                 led_position[0]++;
+            } else {
+                led_position[0]=0;
             }
         } else if (index == 0) {
             if (led_position[0] > 0) {  // turned left
                 led_position[0]--;
+            } else {
+                led_position[0]=NUM_COLUMNS-1;
             }
         }
 
         // Encoder 2, right
         else if (index == 1 && clockwise) {
-            if (led_position[1] < NUM_COLUMNS) {  // turned right
+            if (led_position[1] < 7) {  // turned right
                 led_position[1]++;
+            } else {
+                led_position[1]=0;
             }
         } else if (index == 1) {
             if (led_position[1] > 0) {  // turned left
                 led_position[1]--;
+            } else {
+                led_position[1]=7;
             }
         }
 
         uint8_t device_num = led_position[0] / 8;
-        uint8_t col = led_position[0] % 8;
-        uint8_t row = led_position[1];
-        max7219_set_led(device_num, row, col, true);
+        max7219_set_led(device_num, led_position[0], led_position[1], true);
     }
     return true;  // FIXME: check which I should return
 }
