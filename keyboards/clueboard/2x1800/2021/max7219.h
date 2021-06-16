@@ -27,6 +27,7 @@
  */
 #pragma once
 #include "quantum.h"
+#include "spi_master.h"
 
 // Configure our MAX7219's
 #define MAX_BYTES MAX7219_CONTROLLERS * 2

@@ -38,28 +38,18 @@
 
 #include "max7219.h"
 
-/* Bitbang data by pulling the MAX7219_DATA pin high/low and pulsing the MAX7219_CLK pin between bits.
- */
-void shift_out(uint8_t val) {
-    for (uint8_t i=0; i < 8; i++)  {
-        writePin(MAX7219_DATA, !!(val & (1 << (7 - i))));
-        writePinHigh(MAX7219_CLK);
-        writePinLow(MAX7219_CLK);
-    }
-}
-
 /* Write max7219_spidata to all the max7219's
  */
 void max7219_write_all(void) {
-    xprintf("max7219_write_all()\n");
-
-    // Bitbang the data
-    writePinLow(MAX7219_LOAD);
-    for(int i = MAX_BYTES; i>0; i--) {
-        xprintf("shift_out: %d: %d\n", i-1, max7219_spidata[i-1]);
-        shift_out(max7219_spidata[i-1]);
+    if (spi_start(MAX7219_LOAD, false, 0, 8)) {
+        for(int i = MAX_BYTES; i>0; i--) {
+            xprintf("spi_write(%d)\n", max7219_spidata[i-1]);
+            spi_write(max7219_spidata[i-1]);
+        }
+        spi_stop();
+    } else {
+        xprintf("Could not spi_start!\n");
     }
-    writePinHigh(MAX7219_LOAD);
 }
 
 /* Write data to a single max7219
@@ -116,10 +106,11 @@ void max7219_init(void) {
     wait_ms(1500);
     xprintf("max7219_init()\n");
 
-    setPinOutput(MAX7219_DATA);
-    setPinOutput(MAX7219_CLK);
+    //setPinOutput(MAX7219_DATA);
+    //setPinOutput(MAX7219_CLK);
     setPinOutput(MAX7219_LOAD);
     writePinHigh(MAX7219_LOAD);
+    spi_init();
 
     for (int i=0; i<MAX7219_CONTROLLERS; i++) {
         max7219_shutdown(i, true);
@@ -216,14 +207,12 @@ void max7219_set_led(int device_num, int row, int column, bool state) {
     offset = device_num*8;
     val = 0b10000000 >> column;
 
-    xprintf("set_led: state before: %d\n", status[offset+row]);
     if (state) {
         status[offset+row] = status[offset+row]|val;
     } else {
         val = ~val;
         status[offset+row] = status[offset+row]&val;
     }
-    xprintf("set_led: state after: %d\n", status[offset+row]);
     max7219_write(device_num, row+1, status[offset+row]);
 }
 
