@@ -112,9 +112,9 @@ void max7219_init(void) {
     writePinHigh(MAX7219_LOAD);
     spi_init();
 
-    for (int i=0; i<MAX7219_CONTROLLERS; i++) {
-        max7219_shutdown(i, true);
-    }
+    //for (int i=0; i<MAX7219_CONTROLLERS; i++) {
+    //    max7219_shutdown(i, true);
+    //}
 
     for (int i=0; i<MAX7219_CONTROLLERS; i++) {
         // Reset everything to defaults and enable the display
@@ -122,14 +122,14 @@ void max7219_init(void) {
         max7219_set_scan_limit(i, 7);
         max7219_set_decode_mode(i, 0);
         max7219_clear_display(i);
-        max7219_set_intensity(i, 8);
-        max7219_shutdown(i, false);
+        max7219_set_intensity(i, LED_INTENSITY);
+        max7219_shutdown(i, true);
     }
 
     for (int i=0; i<MAX7219_CONTROLLERS; i++) {
         // Test this display
         max7219_display_test(i, true);
-        wait_ms(100);
+        wait_ms(75);
         max7219_display_test(i, false);
     }
 
@@ -142,7 +142,9 @@ void max7219_init(void) {
         }
     }
 #endif
-    while (1) {
+
+#ifdef MAX7219_LED_ITERATE
+    while (0) {
         for(int col=0;col<8;col++) {
             for (int i=0; i<MAX7219_CONTROLLERS; i++) {
                 for (int row=0; row<8; row++) {
@@ -153,6 +155,7 @@ void max7219_init(void) {
             }
         }
     }
+#endif
 }
 
 /* Set the decode mode of the controller. You probably don't want to change this.
